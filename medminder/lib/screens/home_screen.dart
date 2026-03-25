@@ -1,0 +1,103 @@
+import 'package:flutter/material.dart';
+import 'package:medminder/models/prescription.dart';
+import 'package:medminder/repositories/prescription_repository.dart';
+import 'package:medminder/widgets/prescription_form.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+
+  List<Prescription> prescriptions = [];
+  bool isLoading = true;
+
+  Future<void> loadPrescriptions() async{
+    setState(() { isLoading = true; });
+    final loaded = await PrescriptionRepository.getPrescriptions();
+    setState(() {
+      this.prescriptions = loaded;
+      isLoading = false;
+    });
+  }
+
+  Future<void> _showPrescriptionFormDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => Dialog(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: PrescriptionForm(),
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    if (result == true) await loadPrescriptions();
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    loadPrescriptions();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('MedMinder')),
+      body: Builder(
+        builder: (context) {
+          if (isLoading) return const Center(child: CircularProgressIndicator());
+          if (prescriptions.isEmpty) return const Center(child: Text('No prescriptions found'));
+          return ListView.builder(
+            itemCount: prescriptions.length,
+            itemBuilder: (context, index){
+              final prescription = prescriptions[index];
+              return Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: const Color.fromARGB(255, 14, 74, 102),
+                    child: Text(
+                      prescription.name[0],
+                      style: const TextStyle(color: Color.fromARGB(255, 223, 204, 204)),
+                    ),
+                  ),
+                  title: Text(
+                    prescription.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(prescription.deliveryMethod),
+                  onTap: (){
+                    // Edit prescription
+                  },
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed:() {
+                      // Delete prescription
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: _showPrescriptionFormDialog,
+      ),
+    );
+  }
+}
