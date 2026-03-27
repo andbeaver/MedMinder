@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
 
   }
 
+  //Prescitpion Add form
   Future<void> _showPrescriptionFormDialog() async {
     final result = await showDialog<bool>(
       context: context,
@@ -52,7 +53,7 @@ class _HomePageState extends State<HomePage> {
     if (result == true) await loadPrescriptions();
   }
 
-
+//Search Logic
 void updateSearch(String query) {
   setState(() {
     searchQuery = query.toLowerCase();
@@ -60,7 +61,32 @@ void updateSearch(String query) {
     filteredPrescriptions = prescriptions.where((p) {
       return p.name.toLowerCase().contains(searchQuery);
     }).toList();
+
   });
+}
+
+//Confirm Prescription Deletion Modal
+Future<bool> confirmDelete(Prescription prescription) async{
+  
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text("Delete ${prescription.name}?"),
+      content: Text("This action cannot be undone."),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text("No"),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text("Yes"),
+        ),
+      ],
+    ),
+  );
+
+  return result ?? false;
 }
 
 
@@ -120,12 +146,16 @@ void updateSearch(String query) {
       //Main body
       body: Builder(
         builder: (context) {
+
           if (isLoading) return const Center(child: CircularProgressIndicator());
           if (prescriptions.isEmpty) return const Center(child: Text('No prescriptions match your search'));
+
           return ListView.builder(
             itemCount: filteredPrescriptions.length,
             itemBuilder: (context, index){
+
               final prescription = filteredPrescriptions[index];
+
               return Card(
                 elevation: 4,
                 margin: const EdgeInsets.symmetric(vertical: 8),
@@ -154,12 +184,31 @@ void updateSearch(String query) {
                          ),
                          );                 
                   },
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed:() {
-                      // Delete prescription
-                    },
-                  ),
+                  //Deletion Button
+                  trailing: 
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+
+                            final confirmed = await confirmDelete(prescription);
+
+                            if (!confirmed) return;
+            
+                            //Run deletion logic if confirmed
+                            final deletedCount = await PrescriptionRepository.deletePrescription(prescription.id!);
+
+                            if (deletedCount > 0) {
+                              // Refresh UI 
+                              setState(() {
+                                prescriptions.removeWhere((p) => p.id == prescription.id);
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Deleted successfully')),
+                              );
+                            }
+                          },
+                        )
                 ),
               );
             },

@@ -10,3 +10,12 @@ medminder/macos/Flutter/GeneratedPluginRegistrant.swift
 medminder/windows/flutter/generated_plugin_registrant.cc
 medminder/windows/flutter/generated_plugin_registrant.h
 medminder/windows/flutter/generated_plugins.cmake
+medminder/linux/flutter/generated_plugin_registrant.cc
+
+
+medminder/linux/flutter/generated_plugin_registrant.h
+medminder/linux/flutter/generated_plugins.cmake
+medminder/macos/Flutter/GeneratedPluginRegistrant.swift
+medminder/windows/flutter/generated_plugin_registrant.cc
+medminder/windows/flutter/generated_plugin_registrant.h
+medminder/windows/flutter/generated_plugins.cmake
