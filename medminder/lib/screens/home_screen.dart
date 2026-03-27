@@ -3,6 +3,7 @@ import 'package:medminder/models/prescription.dart';
 import 'package:medminder/repositories/prescription_repository.dart';
 import 'package:medminder/widgets/prescription_form.dart';
 import 'package:medminder/screens/calendar_screen.dart';
+import 'package:medminder/screens/prescription_detail_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -145,7 +146,13 @@ void updateSearch(String query) {
                   ),
                   subtitle: Text(prescription.deliveryMethod),
                   onTap: (){
-                    // Edit prescription
+                    // Navigate to prescription detail screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PrescriptionDetailScreen(prescription: prescription),
+                         ),
+                         );                 
                   },
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
