@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:medminder/models/prescription.dart';
 import 'package:medminder/repositories/prescription_repository.dart';
+import 'package:medminder/services/notification_service.dart';
 
 class PrescriptionForm extends StatefulWidget {
   const PrescriptionForm({super.key});
@@ -34,7 +35,10 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
         deliveryMethod: deliveryMethod
       );
 
-      await PrescriptionRepository.addPrescription(prescription);
+      final id = await PrescriptionRepository.addPrescription(prescription);
+      // Schedule notification for the newly added prescription
+      prescription.id = id;
+      await NotificationService().scheduleNotificationForPrescription(prescription);
       Navigator.of(context).pop(true); // Return true to indicate a new prescription was added
     }
   }

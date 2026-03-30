@@ -4,6 +4,7 @@ import 'package:medminder/repositories/prescription_repository.dart';
 import 'package:medminder/widgets/prescription_form.dart';
 import 'package:medminder/screens/calendar_screen.dart';
 import 'package:medminder/screens/prescription_detail_screen.dart';
+import 'package:medminder/services/notification_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -174,7 +175,13 @@ Future<bool> confirmDelete(Prescription prescription) async{
                     prescription.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(prescription.deliveryMethod),
+                  subtitle: Text(
+                    "Next fill in ${prescription.daysUntilNextFill} days",
+                    style: TextStyle(
+                      color: prescription.shouldNotify ? Colors.red : Colors.green,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   onTap: (){
                     // Navigate to prescription detail screen
                     Navigator.push(
@@ -198,6 +205,9 @@ Future<bool> confirmDelete(Prescription prescription) async{
                             final deletedCount = await PrescriptionRepository.deletePrescription(prescription.id!);
 
                             if (deletedCount > 0) {
+                              // Cancel scheduled notification for the deleted prescription
+                              await NotificationService().cancelNotification(prescription.id!);
+                              
                               // Refresh UI 
                               setState(() {
                                 prescriptions.removeWhere((p) => p.id == prescription.id);
