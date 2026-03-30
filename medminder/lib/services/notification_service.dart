@@ -87,55 +87,90 @@ class NotificationService {
     );
   }
 
-  /// Schedule a notification for a single prescription.
-  /// Schedules at 9:00 AM local time on (nextFillDate - noticeDays).
+  /// Schedule two notifications for a single prescription:
+  /// - Reminder: 3 days before refill at 9:00 AM
+  /// - Due: On refill date at 9:00 AM
   Future<void> scheduleNotificationForPrescription(Prescription p) async {
     if (!_initialized) await initNotification();
 
-    final scheduledDate = p.nextFillDate.subtract(Duration(days: p.noticeDays));
-    final scheduledDateTime = DateTime(
-      scheduledDate.year,
-      scheduledDate.month,
-      scheduledDate.day,
+    final prescriptionId = p.id ?? p.hashCode;
+    final details = notificationDetails();
+
+    // Notification 1: Reminder 3 days before refill
+    final reminderDate = p.nextFillDate.subtract(Duration(days: 3));
+    final reminderDateTime = DateTime(
+      reminderDate.year,
+      reminderDate.month,
+      reminderDate.day,
       9,
     );
 
-    if (scheduledDateTime.isBefore(DateTime.now())) {
-      // Don't schedule notifications in the past - show immediately instead for testing
-      print('Scheduled time is in the past, showing immediately: ${p.name}');
+    if (reminderDateTime.isAfter(DateTime.now())) {
       try {
-        await showNotification(
-          id: p.id ?? p.hashCode,
-          title: p.name,
-          body: 'Refill due on ${p.nextFillDate.toLocal().toString().split(' ')[0]}',
+        await notificationsPlugin.zonedSchedule(
+          id: prescriptionId * 2,
+          title: '${p.name} - Reminder',
+          body: 'Refill in 3 days',
+          scheduledDate: tz.TZDateTime.from(reminderDateTime, tz.local),
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.dateAndTime,
         );
       } catch (e) {
-        print('Failed to show immediate notification for ${p.name}: $e');
+        print('Failed to schedule reminder notification for ${p.name}: $e');
       }
-      return;
+    } else {
+      try {
+        await showNotification(
+          id: prescriptionId * 2,
+          title: '${p.name} - Reminder',
+          body: 'Refill in 3 days',
+        );
+      } catch (e) {
+        print('Failed to show immediate reminder for ${p.name}: $e');
+      }
     }
 
-    final details = notificationDetails();
+    // Notification 2: Due on refill date
+    final dueDateTime = DateTime(
+      p.nextFillDate.year,
+      p.nextFillDate.month,
+      p.nextFillDate.day,
+      9,
+    );
 
-    try {
-      await notificationsPlugin.zonedSchedule(
-        id: p.id ?? p.hashCode,
-        title: p.name,
-        body: 'Refill due on ${p.nextFillDate.toLocal().toString().split(' ')[0]}',
-        scheduledDate: tz.TZDateTime.from(scheduledDateTime, tz.local),
-        notificationDetails: details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.dateAndTime,
-      );
-    } catch (e) {
-      // Permission denied or other error; fail silently (can log in production)
-      print('Failed to schedule notification for ${p.name}: $e');
+    if (dueDateTime.isAfter(DateTime.now())) {
+      try {
+        await notificationsPlugin.zonedSchedule(
+          id: prescriptionId * 2 + 1,
+          title: '${p.name} - Refill Due',
+          body: 'Time to refill your medication',
+          scheduledDate: tz.TZDateTime.from(dueDateTime, tz.local),
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.dateAndTime,
+        );
+      } catch (e) {
+        print('Failed to schedule due notification for ${p.name}: $e');
+      }
+    } else {
+      try {
+        await showNotification(
+          id: prescriptionId * 2 + 1,
+          title: '${p.name} - Refill Due',
+          body: 'Time to refill your medication',
+        );
+      } catch (e) {
+        print('Failed to show immediate due notification for ${p.name}: $e');
+      }
     }
   }
 
-  /// Cancel a scheduled notification by id.
+  /// Cancel both scheduled notifications for a prescription by id.
+  /// Each prescription has two notifications: reminder (id*2) and due (id*2+1).
   Future<void> cancelNotification(int id) async {
-    await notificationsPlugin.cancel(id: id);
+    await notificationsPlugin.cancel(id: id * 2);
+    await notificationsPlugin.cancel(id: id * 2 + 1);
   }
 
   /// Schedule notifications for all prescriptions in the database.
