@@ -1,10 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:medminder/models/prescription.dart';
+import 'package:medminder/repositories/prescription_repository.dart';
 
-class PrescriptionDetailScreen extends StatelessWidget {
+class PrescriptionDetailScreen extends StatefulWidget {
   final Prescription prescription;
 
   const PrescriptionDetailScreen({super.key, required this.prescription});
+
+  @override
+  State<PrescriptionDetailScreen> createState() => _PrescriptionDetailScreenState();
+}
+
+class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
+  late Prescription prescription;
+
+  @override
+  void initState() {
+    super.initState();
+    prescription = widget.prescription;
+  }
+
+  // reset last filled date to today
+  Future<void> markAsRefilled() async {
+    setState(() {
+      prescription.lastFilledDate = DateTime.now();
+    });
+    await PrescriptionRepository.updatePrescription(prescription);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Marked as refilled!")),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +42,12 @@ class PrescriptionDetailScreen extends StatelessWidget {
           style: const TextStyle(color: Colors.white),
         ),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Prescription info card
+            // prescription info card
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -50,7 +74,7 @@ class PrescriptionDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Refill info card
+            // refill info card
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -67,13 +91,33 @@ class PrescriptionDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+
+            // mark as refilled button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: markAsRefilled,
+                icon: const Icon(Icons.check_circle, color: Colors.white),
+                label: const Text(
+                  "Mark as Refilled",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 30, 95, 148),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Builds a detail row
   Widget _buildDetailRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -96,7 +140,7 @@ class PrescriptionDetailScreen extends StatelessWidget {
     );
   }
 
-  // Refill countdown row with color
+  // refill countdown with color
   Widget _buildRefillRow(Prescription prescription) {
     Color statusColor;
     if (prescription.daysUntilNextFill <= prescription.noticeDays) {
