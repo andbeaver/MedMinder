@@ -77,7 +77,7 @@ Future<bool> confirmDelete(Prescription prescription) async{
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: Text("No"),
+          child: Text("Cancel"),
         ),
         TextButton(
           onPressed: () => Navigator.pop(context, true),
@@ -182,14 +182,17 @@ Future<bool> confirmDelete(Prescription prescription) async{
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  onTap: (){
-                    // Navigate to prescription detail screen
-                    Navigator.push(
+                  onTap: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => PrescriptionDetailScreen(prescription: prescription),
-                         ),
-                         );                 
+                        builder: (_) => PrescriptionDetailScreen(
+                          prescription: prescription,
+                        ),
+                      ),
+                    );
+
+                    await loadPrescriptions();
                   },
                   //Deletion Button
                   trailing: 
