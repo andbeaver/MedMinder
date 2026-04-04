@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:medminder/screens/home_screen.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:medminder/theme/app_styles.dart';
 
 import 'package:medminder/services/notification_service.dart';
 
@@ -25,11 +26,23 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.transparent,
+        fontFamily: 'Roboto', 
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 6,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+
+
+      ),
       title: 'MedMinder',
       debugShowCheckedModeBanner: false,
       home: HomePage()

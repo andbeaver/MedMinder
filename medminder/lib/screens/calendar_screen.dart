@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:medminder/models/prescription.dart';
 import 'package:medminder/repositories/prescription_repository.dart';
 import 'package:medminder/screens/prescription_detail_screen.dart';
+import 'package:medminder/theme/app_styles.dart';
+import 'package:medminder/widgets/gradient_body.dart';
+
+
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -55,192 +59,231 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Colors.green;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final monthRefills = getRefillsForMonth();
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 30, 95, 148),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Calendar",
-          style: TextStyle(color: Colors.white),
+@override
+Widget build(BuildContext context) {
+  final monthRefills = getRefillsForMonth();
+
+  return Scaffold(
+    backgroundColor: Colors.transparent,
+    extendBodyBehindAppBar: true,
+    
+    appBar: AppBar(
+      backgroundColor:  AppColors.lightPrimary,
+      iconTheme: const IconThemeData(color: Colors.white),
+      elevation: 4,
+      toolbarHeight: 68,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(20), 
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // calendar card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  children: [
-                    // month navigation
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.chevron_left,
-                              color: Color.fromARGB(255, 30, 95, 148)),
-                          onPressed: () {
-                            setState(() {
-                              focusedMonth = DateTime(
-                                  focusedMonth.year, focusedMonth.month - 1);
-                              selectedDay = null;
-                            });
-                          },
-                        ),
-                        Text(
-                          "${_monthName(focusedMonth.month)} ${focusedMonth.year}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 30, 95, 148),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_right,
-                              color: Color.fromARGB(255, 30, 95, 148)),
-                          onPressed: () {
-                            setState(() {
-                              focusedMonth = DateTime(
-                                  focusedMonth.year, focusedMonth.month + 1);
-                              selectedDay = null;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    // day headers
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-                          .map((d) => Text(d,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                  fontSize: 12)))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildCalendarGrid(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+      title: const Text(
+        "Calendar",
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
 
-            // list of refills for this month
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Refills in ${_monthName(focusedMonth.month)}",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 30, 95, 148),
+    body: GradientBody(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ─────────────────────
+          // Calendar card
+          // ─────────────────────
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                children: [
+                  // month navigation
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: Color.fromARGB(255, 30, 95, 148),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            focusedMonth = DateTime(
+                              focusedMonth.year,
+                              focusedMonth.month - 1,
+                            );
+                            selectedDay = null;
+                          });
+                        },
                       ),
-                    ),
-                    const Divider(),
-                    // no refills this month
-                    monthRefills.isEmpty
-                        ? const Text(
-                            "No refills this month.",
-                            style: TextStyle(color: Colors.grey),
-                          )
-                        : Column(
-                            children: monthRefills.map((p) {
-                              final isHighlighted = selectedDay != null &&
-                                  p.nextFillDate.year == selectedDay!.year &&
-                                  p.nextFillDate.month == selectedDay!.month &&
-                                  p.nextFillDate.day == selectedDay!.day;
-                              return GestureDetector(
-                                onTap: () {
-                                  // tap to go to detail screen
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          PrescriptionDetailScreen(
-                                              prescription: p),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    // highlight if selected day matches
-                                    border: isHighlighted
-                                        ? Border.all(
-                                            color: const Color.fromARGB(
-                                                255, 30, 95, 148),
-                                            width: 2)
-                                        : null,
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: isHighlighted
-                                        ? const Color.fromARGB(20, 30, 95, 148)
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.medication,
-                                          color:
-                                              Color.fromARGB(255, 30, 95, 148)),
-                                      const SizedBox(width: 8),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            p.name,
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                            ),
-                                          ),
-                                          Text(
-                                            "Refill on: ${p.nextFillDate.toLocal().toString().split(' ')[0]}",
-                                            style: const TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 13),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                      Text(
+                        "${_monthName(focusedMonth.month)} ${focusedMonth.year}",
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 30, 95, 148),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.chevron_right,
+                          color: Color.fromARGB(255, 30, 95, 148),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            focusedMonth = DateTime(
+                              focusedMonth.year,
+                              focusedMonth.month + 1,
+                            );
+                            selectedDay = null;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // day headers
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                        .map(
+                          (d) => Text(
+                            d,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
                           ),
-                  ],
-                ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildCalendarGrid(),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
+          ),
 
+          const SizedBox(height: 16),
+
+          // ─────────────────────
+          // Refills list card
+          // ─────────────────────
+          Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Refills in ${_monthName(focusedMonth.month)}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 30, 95, 148),
+                    ),
+                  ),
+                  const Divider(),
+
+                  monthRefills.isEmpty
+                      ? const Text(
+                          "No refills this month.",
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      : Column(
+                          children: monthRefills.map((p) {
+                            final isHighlighted =
+                                selectedDay != null &&
+                                p.nextFillDate.year == selectedDay!.year &&
+                                p.nextFillDate.month ==
+                                    selectedDay!.month &&
+                                p.nextFillDate.day == selectedDay!.day;
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        PrescriptionDetailScreen(
+                                      prescription: p,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin:
+                                    const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  border: isHighlighted
+                                      ? Border.all(
+                                          color: const Color.fromARGB(
+                                              255, 30, 95, 148),
+                                          width: 2,
+                                        )
+                                      : null,
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                  color: isHighlighted
+                                      ? const Color.fromARGB(
+                                          20, 30, 95, 148)
+                                      : null,
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.medication,
+                                      color: Color.fromARGB(
+                                          255, 30, 95, 148),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          p.name,
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight:
+                                                FontWeight.bold,
+                                            decoration: TextDecoration
+                                                .underline,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Refill on: ${p.nextFillDate.toLocal().toString().split(' ')[0]}",
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
   Widget _buildCalendarGrid() {
     final firstDay = DateTime(focusedMonth.year, focusedMonth.month, 1);
     final daysInMonth =

@@ -5,6 +5,8 @@ import 'package:medminder/widgets/prescription_form.dart';
 import 'package:medminder/screens/calendar_screen.dart';
 import 'package:medminder/screens/prescription_detail_screen.dart';
 import 'package:medminder/services/notification_service.dart';
+import 'package:medminder/theme/app_styles.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -101,137 +103,207 @@ Future<bool> confirmDelete(Prescription prescription) async{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //Nav Bar
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+
+      //Nav bar
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 30, 95, 148),
-        titleSpacing: 0,
+        backgroundColor: AppColors.lightPrimary,
+        elevation: 4,
+        toolbarHeight: 68,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(20), 
+          ),
+        ),
+        titleSpacing: 16,
         title: Row(
           children: [
-            // Search Bar Placeholder
-            Expanded(
-              child: Container(
-                height: 40,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.centerLeft,
-                child: TextField(
-                  controller: searchController,
-                  onChanged: updateSearch,
-                  decoration: const InputDecoration(
-                    hintText: "Enter Prescription Name..",
-                    border: InputBorder.none,
-                  ),
-                ),
+
+            Image.asset(
+              'assets/icon/iconTransparent.png',
+              width: 36,
+              height: 36,
+
+            ),
+            const SizedBox(width: 12),
+
+            const Text(
+              "MedMinder",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
               ),
             ),
-
-            // Calendar Button
-            IconButton(
-              icon: const Icon(Icons.calendar_today, size: 36),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CalendarScreen(),
-                  ),
-                );
-              },
-            )
           ],
         ),
-      ),
+
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const CalendarScreen(),
+              ),
+            );
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.calendar_month, color: Colors.white, size: 36,),
+              SizedBox(height: 4,)
+            ],
+          ),
+        ),
+        const SizedBox(width: 10),
+      ],
+    ),
 
       //Main body
-      body: Builder(
-        builder: (context) {
+      body: Container(
+        decoration: AppGradients.scaffoldBackground(context),
+        child: Container(
+          decoration: AppGradients.leftGlow(AppColors.primary),
+          child: Container(
+            decoration: AppGradients.rightGlow(AppColors.primary),
+            child: SafeArea(
+              child: Builder(
+                builder: (context) {
 
-          if (isLoading) return const Center(child: CircularProgressIndicator());
-          if (prescriptions.isEmpty) return const Center(child: Text('No prescriptions match your search'));
+                  if (isLoading) return const Center(child: CircularProgressIndicator());
+                  if (prescriptions.isEmpty) return const Center(child: Text('No prescriptions match your search'));
 
-          return ListView.builder(
-            itemCount: filteredPrescriptions.length,
-            itemBuilder: (context, index){
-
-              final prescription = filteredPrescriptions[index];
-
-              return Card(
-                elevation: 4,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: const Color.fromARGB(255, 14, 74, 102),
-                    child: Text(
-                      prescription.name[0],
-                      style: const TextStyle(color: Color.fromARGB(255, 223, 204, 204)),
-                    ),
-                  ),
-                  title: Text(
-                    prescription.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    "Next fill in ${prescription.daysUntilNextFill} days",
-                    style: TextStyle(
-                      color: prescription.shouldNotify ? Colors.red : Colors.green,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PrescriptionDetailScreen(
-                          prescription: prescription,
+                return Column(
+                  children: [
+                    //Search Box
+                    Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14), 
+                        side: const BorderSide(
+                            color: Colors.black, 
+                            width: 1.5,         
+                          ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.search, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                controller: searchController,
+                                onChanged: updateSearch,
+                                decoration: const InputDecoration(
+                                  hintText: "Search your prescriptions",
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    );
+                    ),
 
-                    await loadPrescriptions();
-                  },
-                  //Deletion Button
-                  trailing: 
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
+                    // Prescription List
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredPrescriptions.length,
+                        itemBuilder: (context, index) {
+                          final prescription = filteredPrescriptions[index];
 
-                            final confirmed = await confirmDelete(prescription);
+                          return Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                            shape: prescription.shouldNotify
+                                ? RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: const BorderSide(color: AppColors.warning, width: 2.5),
+                                  )
+                                : RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: const BorderSide(
+                                        color: AppColors.primary, width: 1.5),
+                                  ),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: const Color.fromARGB(255, 14, 74, 102),
+                                child: Text(
+                                  prescription.name[0],
+                                  style: const TextStyle(
+                                      color: Color.fromARGB(255, 223, 204, 204)),
+                                ),
+                              ),
+                              title: Text(
+                                prescription.name,
+                                style: AppTextStyles.cardTitle,
+                              ),
+                              subtitle: Text(
+                                "Next fill in ${prescription.daysUntilNextFill} days",
+                                style: AppTextStyles.cardSubtitle.copyWith(
+                                  color: prescription.shouldNotify
+                                      ? AppColors.warning
+                                      : AppColors.filled,
+                                ),
+                              ),
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        PrescriptionDetailScreen(prescription: prescription),
+                                  ),
+                                );
+                                await loadPrescriptions();
+                              },
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () async {
+                                  final confirmed = await confirmDelete(prescription);
+                                  if (!confirmed) return;
 
-                            if (!confirmed) return;
-            
-                            //Run deletion logic if confirmed
-                            final deletedCount = await PrescriptionRepository.deletePrescription(prescription.id!);
+                                  final deletedCount =
+                                      await PrescriptionRepository.deletePrescription(
+                                          prescription.id!);
 
-                            if (deletedCount > 0) {
-                              // Cancel scheduled notification for the deleted prescription
-                              await NotificationService().cancelNotification(prescription.id!);
-                              
-                              // Refresh UI 
-                              setState(() {
-                                prescriptions.removeWhere((p) => p.id == prescription.id);
-                              });
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Deleted successfully')),
-                              );
-                            }
-                          },
-                        )
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: _showPrescriptionFormDialog,
-      ),
-    );
-  }
+                                  if (deletedCount > 0) {
+                                    await NotificationService()
+                                        .cancelNotification(prescription.id!);
+                                    setState(() {
+                                      prescriptions.removeWhere(
+                                          (p) => p.id == prescription.id);
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Deleted successfully')),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),             
+          ),
+        )
+      )
+    ),
+    floatingActionButton: FloatingActionButton(
+      child: const Icon(Icons.add),
+      onPressed: _showPrescriptionFormDialog,
+    ),
+  );
+}
 }

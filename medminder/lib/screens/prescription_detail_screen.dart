@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:medminder/models/prescription.dart';
 import 'package:medminder/repositories/prescription_repository.dart';
+import 'package:medminder/theme/app_styles.dart';
+import 'package:medminder/widgets/gradient_body.dart';
+
 
 class PrescriptionDetailScreen extends StatefulWidget {
   final Prescription prescription;
@@ -77,233 +80,247 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
   }
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 30, 95, 148),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          prescription.name,
-          style: const TextStyle(color: Colors.white),
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.transparent,
+    extendBodyBehindAppBar: true,
+
+    appBar: AppBar(
+      backgroundColor: AppColors.lightPrimary,
+      iconTheme: const IconThemeData(color: Colors.white),
+      elevation: 4,
+      toolbarHeight: 68,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(20), 
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // prescription info card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    
-                     _buildEditableDetailRow(
-                      icon: Icons.numbers,
-                      label: "Prescription Number",
-                      controller: presciptionNumberController,
-                      isEditing: isEditingNumber,
-                      onEdit: () {
-                        setState(() => isEditingNumber = true);
-                      },
-                      onCancel: () {
-                        setState(() {
-                          presciptionNumberController.text = prescription.prescriptionNumber ?? "";
-                          isEditingNumber = false;
-                        });
-                      },
-                      onSave: () async {
-                        prescription.prescriptionNumber = presciptionNumberController.text;
-                        await PrescriptionRepository.updatePrescription(prescription);
-                        setState(() => isEditingNumber = false);
-                      },
-                    ),
-
-                    const Divider(),   
-                    _buildEditableDetailRow(
-                      icon: Icons.local_pharmacy,
-                      label: "Pharmacy",
-                      controller: pharmacyController,
-                      isEditing: isEditingPharmacy,
-                      onEdit: () {
-                        setState(() => isEditingPharmacy = true);
-                      },
-                      onCancel: () {
-                        setState(() {
-                          pharmacyController.text = prescription.pharmacyName ?? "";
-                          isEditingPharmacy = false;
-                        });
-                      },
-                      onSave: () async {
-                        prescription.pharmacyName = pharmacyController.text;
-                        await PrescriptionRepository.updatePrescription(prescription);
-                        setState(() => isEditingPharmacy = false);
-                      },
-                    ),
-                    
-                    const Divider(),
-                    _buildEditableDetailRow(
-                      icon: Icons.local_shipping,
-                      label: "Delivery",
-                      controller: deliveryController,
-                      isEditing: isEditingDelivery,
-                      onEdit: () {
-                        setState(() => isEditingDelivery = true);
-                      },
-                      onCancel: () {
-                        setState(() {
-                          deliveryController.text = prescription.deliveryMethod ?? "";
-                          isEditingDelivery = false;
-                        });
-                      },
-                      onSave: () async {
-                        prescription.deliveryMethod = deliveryController.text;
-                        await PrescriptionRepository.updatePrescription(prescription);
-                        setState(() => isEditingDelivery = false);
-                      },
-                    ),
-                    
-                    const Divider(), 
-                    _buildDatePickerRow(
-                      Icons.calendar_today,
-                      "Last Filled",
-                      prescription.lastFilledDate,
-                      _pickLastFilledDate,
-                    ),
-                   
-                    const Divider(),
-                    _buildEditableDetailRow(
-                      icon: Icons.medication,
-                      label: "Supply Days",
-                      controller: supplyDaysController,
-                      isEditing: isEditingSupplyDays,
-                      onEdit: () {
-                        setState(() => isEditingSupplyDays = true);
-                      },
-                      onCancel: () {
-                        setState(() {
-                          supplyDaysController.text = prescription.supplyDays.toString() ?? "";
-                          isEditingSupplyDays = false;
-                        });
-                      },
-                      onSave: () async {
-                        final parsed = int.tryParse(supplyDaysController.text);
-                          
-                        if (parsed == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please enter a valid number")),
-                          );
-                          return;
-                       }
-
-                        if (parsed < 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please enter a number above 0")),
-                          );
-                          return;
-                       }                        
-
-                        prescription.supplyDays = parsed;
-
-                        await PrescriptionRepository.updatePrescription(prescription);
-                        setState(() => isEditingSupplyDays = false);
-                      },
-                    ),
-                    
-                    const Divider(),
-                    _buildEditableDetailRow(
-                      icon: Icons.notifications,
-                      label: "Notice Days",
-                      controller: noticeDaysController,
-                      isEditing: isEditingNoticeDays,
-                      onEdit: () {
-                        setState(() => isEditingNoticeDays = true);
-                      },
-                      onCancel: () {
-                        setState(() {
-                          noticeDaysController.text = prescription.noticeDays.toString() ?? "";
-                          isEditingNoticeDays = false;
-                        });
-                      },
-                      onSave: () async {
-                        final parsed = int.tryParse(noticeDaysController.text);
-                          
-                        if (parsed == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please enter a valid whole number")),
-                          );
-                          return;
-                       }
-
-                        if (parsed < 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please enter a number above 0.")),
-                          );
-                          return;
-                       }              
-
-                        prescription.noticeDays = parsed;
-
-                        await PrescriptionRepository.updatePrescription(prescription);
-                        setState(() => isEditingNoticeDays = false);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // refill info card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    _buildDetailRow(Icons.event, "Next Fill Date", prescription.nextFillDate.toLocal().toString().split(' ')[0]),
-                    const Divider(),
-                    _buildRefillRow(prescription),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // mark as refilled button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: markAsRefilled,
-                icon: const Icon(Icons.check_circle, color: Colors.white),
-                label: const Text(
-                  "Mark as Refilled",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 30, 95, 148),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
+      title: Text(
+        prescription.name,
+        style: const TextStyle(color: Colors.white),
       ),
-    );
-  }
+    ),
 
+   
+  body: GradientBody(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ───────────────────────
+        // Prescription info card
+        // ───────────────────────
+        Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildEditableDetailRow(
+                  icon: Icons.numbers,
+                  label: "Prescription Number",
+                  controller: presciptionNumberController,
+                  isEditing: isEditingNumber,
+                  onEdit: () {
+                    setState(() => isEditingNumber = true);
+                  },
+                  onCancel: () {
+                    setState(() {
+                      presciptionNumberController.text =
+                          prescription.prescriptionNumber ?? "";
+                      isEditingNumber = false;
+                    });
+                  },
+                  onSave: () async {
+                    prescription.prescriptionNumber =
+                        presciptionNumberController.text;
+                    await PrescriptionRepository.updatePrescription(prescription);
+                    setState(() => isEditingNumber = false);
+                  },
+                ),
+
+                const Divider(),
+
+                _buildEditableDetailRow(
+                  icon: Icons.local_pharmacy,
+                  label: "Pharmacy",
+                  controller: pharmacyController,
+                  isEditing: isEditingPharmacy,
+                  onEdit: () {
+                    setState(() => isEditingPharmacy = true);
+                  },
+                  onCancel: () {
+                    setState(() {
+                      pharmacyController.text =
+                          prescription.pharmacyName ?? "";
+                      isEditingPharmacy = false;
+                    });
+                  },
+                  onSave: () async {
+                    prescription.pharmacyName = pharmacyController.text;
+                    await PrescriptionRepository.updatePrescription(prescription);
+                    setState(() => isEditingPharmacy = false);
+                  },
+                ),
+
+                const Divider(),
+
+                _buildEditableDetailRow(
+                  icon: Icons.local_shipping,
+                  label: "Delivery",
+                  controller: deliveryController,
+                  isEditing: isEditingDelivery,
+                  onEdit: () {
+                    setState(() => isEditingDelivery = true);
+                  },
+                  onCancel: () {
+                    setState(() {
+                      deliveryController.text =
+                          prescription.deliveryMethod ?? "";
+                      isEditingDelivery = false;
+                    });
+                  },
+                  onSave: () async {
+                    prescription.deliveryMethod = deliveryController.text;
+                    await PrescriptionRepository.updatePrescription(prescription);
+                    setState(() => isEditingDelivery = false);
+                  },
+                ),
+
+                const Divider(),
+
+                _buildDatePickerRow(
+                  Icons.calendar_today,
+                  "Last Filled",
+                  prescription.lastFilledDate,
+                  _pickLastFilledDate,
+                ),
+
+                const Divider(),
+
+                _buildEditableDetailRow(
+                  icon: Icons.medication,
+                  label: "Supply Days",
+                  controller: supplyDaysController,
+                  isEditing: isEditingSupplyDays,
+                  onEdit: () {
+                    setState(() => isEditingSupplyDays = true);
+                  },
+                  onCancel: () {
+                    setState(() {
+                      supplyDaysController.text =
+                          prescription.supplyDays.toString();
+                      isEditingSupplyDays = false;
+                    });
+                  },
+                  onSave: () async {
+                    final parsed = int.tryParse(supplyDaysController.text);
+                    if (parsed == null || parsed <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please enter a valid number above 0"),
+                        ),
+                      );
+                      return;
+                    }
+                    prescription.supplyDays = parsed;
+                    await PrescriptionRepository.updatePrescription(prescription);
+                    setState(() => isEditingSupplyDays = false);
+                  },
+                ),
+
+                const Divider(),
+
+                _buildEditableDetailRow(
+                  icon: Icons.notifications,
+                  label: "Notice Days",
+                  controller: noticeDaysController,
+                  isEditing: isEditingNoticeDays,
+                  onEdit: () {
+                    setState(() => isEditingNoticeDays = true);
+                  },
+                  onCancel: () {
+                    setState(() {
+                      noticeDaysController.text =
+                          prescription.noticeDays.toString();
+                      isEditingNoticeDays = false;
+                    });
+                  },
+                  onSave: () async {
+                    final parsed = int.tryParse(noticeDaysController.text);
+                    if (parsed == null || parsed <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please enter a valid number above 0"),
+                        ),
+                      );
+                      return;
+                    }
+                    prescription.noticeDays = parsed;
+                    await PrescriptionRepository.updatePrescription(prescription);
+                    setState(() => isEditingNoticeDays = false);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                _buildDetailRow(
+                  Icons.event,
+                  "Next Fill Date",
+                  prescription.nextFillDate
+                      .toLocal()
+                      .toString()
+                      .split(' ')[0],
+                ),
+                const Divider(),
+                _buildRefillRow(prescription),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: markAsRefilled,
+            icon: const Icon(Icons.check_circle, color: Colors.white),
+            label: const Text(
+              "Mark as Refilled",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+           
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.lightPrimary,
+            ),
+
+          ),
+        ),
+      ],
+    ),
+  ),
+    
+  );
+
+}
 //Static info row
   Widget _buildDetailRow(IconData icon, String label, String value) {
     return Padding(
