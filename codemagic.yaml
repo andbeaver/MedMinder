@@ -1,25 +1,25 @@
 workflows:
- ios-testflight:
-  name: iOS TestFlight
-  max_build_duration: 60
-   instance_type: mac_mini_m2
-   environment:
-    flutter: stable
-    xcode: latest
-    vars:
-     BUNDLE_ID: com.abahvw.medminder
+  ios-testflight:
+    name: iOS TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      vars:
+        BUNDLE_ID: com.abahvw.medminder
       ios_signing:
-      distribution_type: app_store
-      bundle_identifier: $BUNDLE_ID
-     scripts:
+        distribution_type: app_store
+        bundle_identifier: $BUNDLE_ID
+    scripts:
       - name: Get packages
-      script: flutter pub get
+        script: flutter pub get
       - name: Build IPA
-       script: flutter build ipa --release --build-name=1.0.0 --build-number=$CM_BUILD_NUMBER
-     artifacts:
+        script: flutter build ipa --release --build-name=1.0.0 --build-number=$CM_BUILD_NUMBER
+    artifacts:
       - build/ios/ipa/*.ipa
     publishing:
-     app_store_connect:
-      api_key: $APP_STORE_CONNECT_API_KEY
-      key_id: $APP_STORE_CONNECT_KEY_ID
-      issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_API_KEY
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
