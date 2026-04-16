@@ -52,7 +52,7 @@ class AppGradients {
         center: const Alignment(-1.7, 0),
         radius: 1.4,
         colors: [
-          color.withOpacity(0.35),
+          color.withAlpha(89),
           Colors.transparent,
         ],
       ),
@@ -65,7 +65,7 @@ class AppGradients {
         center: const Alignment(1.7, 0),
         radius: 1.4,
         colors: [
-          color.withOpacity(0.35),
+          color.withAlpha(89),
           Colors.transparent,
         ],
       ),

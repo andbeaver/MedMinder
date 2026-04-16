@@ -1,6 +1,7 @@
 import 'package:medminder/models/prescription.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 
 class PrescriptionRepository {
 
@@ -24,27 +25,6 @@ class PrescriptionRepository {
             deliveryMethod TEXT
           )
         ''');
-
-        await db.insert('prescriptions',{
-        'name': 'Test Prescription',
-        'prescriptionNumber': '12345',
-        'pharmacyName': 'Test Pharmacy',
-        'lastFilledDate': DateTime.now().toIso8601String(),
-        'supplyDays': 30,
-        'noticeDays': 5,
-        'deliveryMethod': 'Pickup',
-      });
-
-      await db.insert('prescriptions',{
-        'name': 'Test Prescription 2',
-        'prescriptionNumber': 'ht346',
-        'pharmacyName': 'Lawtons',
-        'lastFilledDate': DateTime.now().toIso8601String(),
-        'supplyDays': 90,
-        'noticeDays': 14,
-        'deliveryMethod': 'Mail',
-      });
-
       },
     );
 
@@ -58,8 +38,10 @@ class PrescriptionRepository {
       final result = await db.query('prescriptions');
       return result.map((map) => Prescription.fromMap(map)).toList();
     } catch (e, st) {
-      print('Error querying prescriptions: $e');
-      print(st);
+      if (kDebugMode) {
+        debugPrint('Error querying prescriptions: $e');
+        debugPrint('$st');
+      }
       return <Prescription>[];
     }
   }

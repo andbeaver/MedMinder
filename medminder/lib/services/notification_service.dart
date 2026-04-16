@@ -3,8 +3,15 @@ import 'package:medminder/models/prescription.dart';
 import 'package:medminder/repositories/prescription_repository.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
+  NotificationService._();
+
+  static final NotificationService _instance = NotificationService._();
+
+  factory NotificationService() => _instance;
+
   final notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
@@ -33,6 +40,11 @@ class NotificationService {
         // Handle notification tap or response here if needed.
       },
     );
+
+    await notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
 
     // Initialize timezone data for scheduled (zoned) notifications
     tz.initializeTimeZones();
@@ -117,7 +129,9 @@ class NotificationService {
           matchDateTimeComponents: DateTimeComponents.dateAndTime,
         );
       } catch (e) {
-        print('Failed to schedule reminder notification for ${p.name}: $e');
+        if (kDebugMode) {
+          debugPrint('Failed to schedule reminder notification for ${p.name}: $e');
+        }
       }
     } else {
       try {
@@ -127,7 +141,9 @@ class NotificationService {
           body: 'Refill in 3 days',
         );
       } catch (e) {
-        print('Failed to show immediate reminder for ${p.name}: $e');
+        if (kDebugMode) {
+          debugPrint('Failed to show immediate reminder for ${p.name}: $e');
+        }
       }
     }
 
@@ -151,7 +167,9 @@ class NotificationService {
           matchDateTimeComponents: DateTimeComponents.dateAndTime,
         );
       } catch (e) {
-        print('Failed to schedule due notification for ${p.name}: $e');
+        if (kDebugMode) {
+          debugPrint('Failed to schedule due notification for ${p.name}: $e');
+        }
       }
     } else {
       try {
@@ -161,7 +179,9 @@ class NotificationService {
           body: 'Time to refill your medication',
         );
       } catch (e) {
-        print('Failed to show immediate due notification for ${p.name}: $e');
+        if (kDebugMode) {
+          debugPrint('Failed to show immediate due notification for ${p.name}: $e');
+        }
       }
     }
   }
@@ -182,7 +202,9 @@ class NotificationService {
       }
     } catch (e) {
       // Log but don't crash; app startup should not be blocked by notification errors
-      print('Error scheduling all notifications: $e');
+      if (kDebugMode) {
+        debugPrint('Error scheduling all notifications: $e');
+      }
     }
   }
 }

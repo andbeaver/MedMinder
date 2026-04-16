@@ -176,7 +176,12 @@ Future<bool> confirmDelete(Prescription prescription) async{
                 builder: (context) {
 
                   if (isLoading) return const Center(child: CircularProgressIndicator());
-                  if (prescriptions.isEmpty) return const Center(child: Text('No prescriptions match your search'));
+                  if (prescriptions.isEmpty) {
+                    return const Center(child: Text('No prescriptions yet'));
+                  }
+                  if (filteredPrescriptions.isEmpty) {
+                    return const Center(child: Text('No prescriptions match your search'));
+                  }
 
                 return Column(
                   children: [
@@ -246,9 +251,11 @@ Future<bool> confirmDelete(Prescription prescription) async{
                                 style: AppTextStyles.cardTitle,
                               ),
                               subtitle: Text(
-                                "Next fill in ${prescription.daysUntilNextFill} days",
+                                prescription.isOverdue
+                                    ? "Overdue by ${prescription.daysUntilNextFill.abs()} days"
+                                    : "Next fill in ${prescription.daysUntilNextFill} days",
                                 style: AppTextStyles.cardSubtitle.copyWith(
-                                  color: prescription.shouldNotify
+                                  color: prescription.isOverdue || prescription.shouldNotify
                                       ? AppColors.warning
                                       : AppColors.filled,
                                 ),
@@ -261,12 +268,14 @@ Future<bool> confirmDelete(Prescription prescription) async{
                                         PrescriptionDetailScreen(prescription: prescription),
                                   ),
                                 );
+                                if (!mounted) return;
                                 await loadPrescriptions();
                               },
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () async {
                                   final confirmed = await confirmDelete(prescription);
+                                  if (!mounted) return;
                                   if (!confirmed) return;
 
                                   final deletedCount =
@@ -276,10 +285,12 @@ Future<bool> confirmDelete(Prescription prescription) async{
                                   if (deletedCount > 0) {
                                     await NotificationService()
                                         .cancelNotification(prescription.id!);
+                                    if (!mounted) return;
                                     setState(() {
                                       prescriptions.removeWhere(
                                           (p) => p.id == prescription.id);
                                     });
+                                    if (!context.mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                           content: Text('Deleted successfully')),
@@ -301,8 +312,8 @@ Future<bool> confirmDelete(Prescription prescription) async{
       )
     ),
     floatingActionButton: FloatingActionButton(
-      child: const Icon(Icons.add),
       onPressed: _showPrescriptionFormDialog,
+      child: const Icon(Icons.add),
     ),
   );
 }

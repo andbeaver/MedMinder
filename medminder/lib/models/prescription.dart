@@ -16,6 +16,8 @@ class Prescription {
     return nextFillDate.difference(DateTime.now()).inDays;
   }
 
+  bool get isOverdue => daysUntilNextFill < 0;
+
   bool get shouldNotify => daysUntilNextFill <= noticeDays;
 
   Prescription({

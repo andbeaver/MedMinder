@@ -54,6 +54,7 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
       prescription.lastFilledDate = DateTime.now();
     });
     await PrescriptionRepository.updatePrescription(prescription);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Marked as refilled!")),
     );
@@ -180,7 +181,7 @@ Widget build(BuildContext context) {
                   onCancel: () {
                     setState(() {
                       deliveryController.text =
-                          prescription.deliveryMethod ?? "";
+                          prescription.deliveryMethod;
                       isEditingDelivery = false;
                     });
                   },

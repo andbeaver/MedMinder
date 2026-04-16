@@ -1,12 +1,10 @@
-import 'dart:async';
 import 'package:medminder/screens/home_screen.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:medminder/theme/app_styles.dart';
 
 import 'package:medminder/services/notification_service.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +14,9 @@ void main() async {
     await notificationService.scheduleAllNotifications();
   } catch (e) {
     // Log but don't crash; continue app startup even if notifications fail
-    print('Error initializing notifications: $e');
+    if (kDebugMode) {
+      debugPrint('Error initializing notifications: $e');
+    }
   }
   runApp(const MyApp());
 }

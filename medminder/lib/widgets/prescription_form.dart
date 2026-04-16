@@ -39,6 +39,7 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
       // Schedule notification for the newly added prescription
       prescription.id = id;
       await NotificationService().scheduleNotificationForPrescription(prescription);
+      if (!mounted) return;
       Navigator.of(context).pop(true); // Return true to indicate a new prescription was added
     }
   }
