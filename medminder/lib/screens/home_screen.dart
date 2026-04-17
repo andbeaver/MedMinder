@@ -92,6 +92,26 @@ Future<bool> confirmDelete(Prescription prescription) async{
   return result ?? false;
 }
 
+Future<void> _showDataInfoDialog() async {
+  await showDialog<void>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text("Your data"),
+      content: const Text(
+        "Your prescriptions are stored on this device only.\n"
+        "No account is required.\n"
+        "Notifications are local to your device.",
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("OK"),
+        ),
+      ],
+    ),
+  );
+}
+
 
   @override
   void initState(){
@@ -140,6 +160,11 @@ Future<bool> confirmDelete(Prescription prescription) async{
         ),
 
       actions: [
+        IconButton(
+          icon: const Icon(Icons.info_outline, color: Colors.white),
+          onPressed: _showDataInfoDialog,
+          tooltip: "Data info",
+        ),
         TextButton(
           onPressed: () {
             Navigator.push(

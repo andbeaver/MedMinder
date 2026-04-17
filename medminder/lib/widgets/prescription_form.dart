@@ -14,7 +14,7 @@ class PrescriptionForm extends StatefulWidget {
 class _PrescriptionFormState extends State<PrescriptionForm> {
   final _formKey = GlobalKey<FormState>();
   String name = '';
-  String prescriptionNumber = '';
+  String? prescriptionNumber;
   String pharmacyName = '';
   DateTime lastFilledDate = DateTime.now();
   int supplyDays = 30;
@@ -61,9 +61,13 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
               ),
               TextFormField(
                 initialValue: prescriptionNumber,
-                decoration: const InputDecoration(labelText: 'Prescription Number'),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter a prescription number' : null,
-                onSaved: (value) => prescriptionNumber = value!,
+                decoration: const InputDecoration(
+                  labelText: 'Prescription Number (optional)',
+                ),
+                onSaved: (value) {
+                  final trimmed = value?.trim();
+                  prescriptionNumber = trimmed?.isEmpty ?? true ? null : trimmed;
+                },
               ),
               TextFormField(
                 initialValue: pharmacyName,

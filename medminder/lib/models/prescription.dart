@@ -23,7 +23,7 @@ class Prescription {
   Prescription({
     this.id, 
     required this.name, 
-    required this.prescriptionNumber, 
+    this.prescriptionNumber, 
     required this.pharmacyName, 
     required this.lastFilledDate, 
     required this.supplyDays, 

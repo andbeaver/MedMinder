@@ -137,8 +137,9 @@ Widget build(BuildContext context) {
                     });
                   },
                   onSave: () async {
+                    final trimmed = presciptionNumberController.text.trim();
                     prescription.prescriptionNumber =
-                        presciptionNumberController.text;
+                        trimmed.isEmpty ? null : trimmed;
                     await PrescriptionRepository.updatePrescription(prescription);
                     setState(() => isEditingNumber = false);
                   },
