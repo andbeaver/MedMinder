@@ -10,9 +10,9 @@ import flutter_local_notifications
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
 
-    // Register the Notifications plugin with the Flutter engine
-    FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { registrar in
-      FlutterLocalNotificationsPlugin.registerWithRegistrar(registrar)
+    // Register plugins for background notification handling
+    FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
     }
 
     GeneratedPluginRegistrant.register(with: self)
