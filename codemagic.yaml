@@ -15,7 +15,7 @@ workflows:
       - name: Get packages
         script: flutter pub get
       - name: Build IPA
-        script: flutter build ipa --release --build-name=1.0.0 --build-number=$CM_BUILD_NUMBER
+        script: flutter build ipa --release --build-name=1.0.0 --build-number=$(date +%Y%m%d%H%M)
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
